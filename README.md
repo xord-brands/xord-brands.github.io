@@ -24,12 +24,6 @@ data/xord-brands-management.csv
 
 This CSV is saved as UTF-8 with BOM so Windows Excel can open Korean text without mojibake.
 
-Developer mirror:
-
-```text
-data/catalog.csv
-```
-
 - Use `row_type=brand` for brand-only rows.
 - Use `row_type=product` for product rows.
 - Repeat the brand fields on product rows so the site can group products under each brand.
