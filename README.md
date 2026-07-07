@@ -22,6 +22,12 @@ Edit the CSV file below in Excel, Google Sheets, or LibreOffice:
 data/catalog.csv
 ```
 
+Windows Excel에서 한글 깨짐 없이 바로 열 관리용 파일:
+
+```text
+data/xord-brands-management.csv
+```
+
 - Use `row_type=brand` for brand-only rows.
 - Use `row_type=product` for product rows.
 - Repeat the brand fields on product rows so the site can group products under each brand.
