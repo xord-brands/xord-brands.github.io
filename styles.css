@@ -361,6 +361,20 @@ img {
   box-shadow: 0 12px 34px rgba(31, 35, 38, 0.08);
   min-width: 0;
   overflow: hidden;
+  transform: translateY(0);
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease;
+}
+
+.brand-card:hover,
+.brand-card:focus-within,
+.product-card:hover,
+.product-card:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 42%, rgba(31, 35, 38, 0.08));
+  box-shadow: 0 22px 52px rgba(31, 35, 38, 0.15);
+  transform: translateY(-5px);
 }
 
 .brand-card {
@@ -379,7 +393,17 @@ img {
 .brand-card-media img {
   height: 100%;
   object-fit: cover;
+  transform: scale(1);
+  transition:
+    filter 200ms ease,
+    transform 220ms ease;
   width: 100%;
+}
+
+.brand-card:hover .brand-card-media img,
+.brand-card:focus-within .brand-card-media img {
+  filter: saturate(1.06) contrast(1.02);
+  transform: scale(1.045);
 }
 
 .brand-fallback {
@@ -454,13 +478,29 @@ img {
   display: block;
   height: 72px;
   overflow: hidden;
+  transition:
+    border-color 180ms ease,
+    transform 180ms ease;
   width: 72px;
+}
+
+.preview-row a:hover,
+.preview-row a:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line));
+  transform: translateY(-2px);
 }
 
 .preview-row img {
   height: 100%;
   object-fit: cover;
+  transform: scale(1);
+  transition: transform 200ms ease;
   width: 100%;
+}
+
+.preview-row a:hover img,
+.preview-row a:focus-visible img {
+  transform: scale(1.07);
 }
 
 .muted {
@@ -481,6 +521,11 @@ img {
   color: var(--ink);
 }
 
+.brand-card:hover .button.ghost,
+.brand-card:focus-within .button.ghost {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--line));
+}
+
 .product-card {
   min-height: 430px;
 }
@@ -495,7 +540,23 @@ img {
 .product-media img {
   height: 100%;
   object-fit: cover;
+  transform: scale(1);
+  transition:
+    filter 200ms ease,
+    transform 220ms ease;
   width: 100%;
+}
+
+.product-card:hover .product-media img,
+.product-card:focus-within .product-media img {
+  filter: saturate(1.06) contrast(1.02);
+  transform: scale(1.045);
+}
+
+.product-card:hover .detail-button,
+.product-card:focus-within .detail-button {
+  background: color-mix(in srgb, var(--accent) 72%, var(--ink));
+  border-color: color-mix(in srgb, var(--accent) 72%, var(--ink));
 }
 
 .tag-row {
@@ -579,12 +640,30 @@ img {
   display: block;
   height: 92px;
   overflow: hidden;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.detail-thumbs a:hover,
+.detail-thumbs a:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 56%, rgba(31, 35, 38, 0.12));
+  box-shadow: 0 10px 22px rgba(31, 35, 38, 0.14);
+  transform: translateY(-2px);
 }
 
 .detail-thumbs img {
   height: 100%;
   object-fit: cover;
+  transform: scale(1);
+  transition: transform 200ms ease;
   width: 100%;
+}
+
+.detail-thumbs a:hover img,
+.detail-thumbs a:focus-visible img {
+  transform: scale(1.06);
 }
 
 .detail-copy {
@@ -853,5 +932,37 @@ img {
 
   .compact-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-card,
+  .product-card,
+  .brand-card-media img,
+  .product-media img,
+  .preview-row a,
+  .preview-row img,
+  .detail-thumbs a,
+  .detail-thumbs img {
+    transition: none;
+  }
+
+  .brand-card:hover,
+  .brand-card:focus-within,
+  .product-card:hover,
+  .product-card:focus-within,
+  .preview-row a:hover,
+  .preview-row a:focus-visible,
+  .detail-thumbs a:hover,
+  .detail-thumbs a:focus-visible,
+  .brand-card:hover .brand-card-media img,
+  .brand-card:focus-within .brand-card-media img,
+  .product-card:hover .product-media img,
+  .product-card:focus-within .product-media img,
+  .preview-row a:hover img,
+  .preview-row a:focus-visible img,
+  .detail-thumbs a:hover img,
+  .detail-thumbs a:focus-visible img {
+    transform: none;
   }
 }
