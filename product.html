@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>상품 상세 | XORD Brands</title>
+    <meta
+      name="description"
+      content="XORD Brands 상품 상세 샘플 페이지입니다. CSV에 등록한 브랜드와 상품 정보를 기준으로 표시됩니다."
+    />
+    <meta property="og:title" content="상품 상세 | XORD Brands" />
+    <meta
+      property="og:description"
+      content="XORD Brands 공식 카탈로그의 상품 상세 페이지입니다."
+    />
+    <meta property="og:image" content="assets/images/xord-hero-wide.png" />
+    <link rel="stylesheet" href="styles.css?v=20260707-4" />
+  </head>
+  <body class="detail-page">
+    <header class="site-header is-scrolled" data-header>
+      <a class="brand-mark" href="index.html" aria-label="XORD Brands 홈">
+        <span class="brand-symbol">XO</span>
+        <span>
+          <strong>XORD</strong>
+          <small>Brands</small>
+        </span>
+      </a>
+      <nav class="top-nav" aria-label="주요 메뉴">
+        <a href="index.html#brands">Brands</a>
+        <a href="index.html#products">Products</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main class="product-detail-main">
+      <nav class="breadcrumb" aria-label="현재 위치">
+        <a href="index.html">XORD Brands</a>
+        <span>/</span>
+        <a href="index.html#products">Products</a>
+      </nav>
+
+      <section class="product-detail" id="product-detail" aria-live="polite">
+        <div class="detail-loading">상품 정보를 불러오는 중입니다.</div>
+      </section>
+
+      <section class="related-section" aria-labelledby="related-title">
+        <div class="section-heading compact">
+          <p class="eyebrow">MORE PRODUCTS</p>
+          <h2 id="related-title">같은 브랜드 상품</h2>
+        </div>
+        <div class="product-grid compact-grid" id="related-products"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>XORD Brands</span>
+      <span>© <span id="year"></span> xord-brands</span>
+    </footer>
+
+    <script src="catalog-data.js?v=20260707-4"></script>
+    <script src="product-detail.js?v=20260707-4"></script>
+  </body>
+</html>
