@@ -1,0 +1,65 @@
+{
+  "brands": [
+    {
+      "name": "LOOTUN",
+      "nameKo": "루툰",
+      "slug": "lootun",
+      "status": "판매중",
+      "summary": "일상에 작은 휴식과 분위기를 더하는 캐릭터 무드등 브랜드",
+      "description": "말랑한 실루엣, 부드러운 빛, 선물하기 좋은 패키지 구성으로 침실과 책상 위를 편안하게 채웁니다.",
+      "category": "캐릭터 무드등",
+      "accent": "#e7b13f",
+      "image": "assets/images/lootun-catalog-hero.png",
+      "storeUrl": "https://smartstore.naver.com/teamz",
+      "products": [
+        {
+          "model": "LT-001",
+          "name": "말랑 뮤지컬 오리 무드등",
+          "summary": "포근한 빛으로 지친 하루를 쉬게 해주는 오리 무드등",
+          "image": "assets/images/products/lt-001/thumbnail-01.jpg",
+          "tags": ["무드등", "선물", "캐릭터"]
+        },
+        {
+          "model": "LT-002",
+          "name": "말랑 축구공 무드등",
+          "summary": "스포츠 감성을 담은 말랑한 충전식 무드등",
+          "image": "assets/images/products/lt-002/thumbnail-01.jpg",
+          "tags": ["무드등", "축구", "충전식"]
+        },
+        {
+          "model": "LT-003",
+          "name": "말랑 토끼 무드등",
+          "summary": "잠자리 곁을 부드럽게 밝혀주는 토끼 무드등",
+          "image": "assets/images/products/lt-003/thumbnail-01.jpg",
+          "tags": ["무드등", "토끼", "침실"]
+        }
+      ]
+    },
+    {
+      "name": "U&I",
+      "nameKo": "유앤아이",
+      "slug": "uandi",
+      "status": "준비중",
+      "summary": "실용적인 생활용품과 시즌 상품을 정리하는 데일리 브랜드",
+      "description": "판매 채널과 상품군 확장에 맞춰 대표 상품을 순차적으로 공개할 예정입니다.",
+      "category": "생활용품",
+      "accent": "#2f7d77",
+      "image": "",
+      "storeUrl": "",
+      "products": []
+    },
+    {
+      "name": "XORD Select",
+      "nameKo": "엑소드 셀렉트",
+      "slug": "xord-select",
+      "status": "큐레이션",
+      "summary": "브랜드별 대표 상품과 테스트 상품을 모아 보여주는 셀렉션",
+      "description": "신규 상품 검토, 상세페이지 준비, 채널별 판매 상태를 한곳에서 관리합니다.",
+      "category": "브랜드 셀렉션",
+      "accent": "#c95f4b",
+      "image": "",
+      "storeUrl": "",
+      "products": []
+    }
+  ]
+}

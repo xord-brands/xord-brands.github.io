@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>XORD Brands | Brand Catalog</title>
+    <meta
+      name="description"
+      content="XORD Brands 브랜드 카탈로그. 루툰을 포함한 여러 브랜드와 대표 상품을 한곳에서 확인하세요."
+    />
+    <meta property="og:title" content="XORD Brands | Brand Catalog" />
+    <meta
+      property="og:description"
+      content="XORD 계정의 브랜드와 대표 상품을 한곳에서 보여주는 공식 카탈로그입니다."
+    />
+    <meta property="og:image" content="assets/images/lootun-catalog-hero.png" />
+    <link rel="stylesheet" href="styles.css?v=20260707" />
+  </head>
+  <body>
+    <header class="site-header" data-header>
+      <a class="brand-mark" href="#top" aria-label="XORD Brands 홈">
+        <span class="brand-symbol">XO</span>
+        <span>
+          <strong>XORD</strong>
+          <small>Brands</small>
+        </span>
+      </a>
+      <nav class="top-nav" aria-label="주요 메뉴">
+        <a href="#brands">Brands</a>
+        <a href="#products">Products</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-media">
+          <img src="assets/images/lootun-catalog-hero.png" alt="LOOTUN 루툰 대표 상품 이미지" />
+        </div>
+        <div class="hero-content">
+          <p class="eyebrow">BRAND CATALOG HUB</p>
+          <h1 id="hero-title">XORD Brands</h1>
+          <p>
+            XORD 계정에서 운영하는 브랜드와 대표 상품을 한곳에서 정리하는
+            공식 카탈로그입니다.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#brands">브랜드 보기</a>
+            <a class="button ghost" href="#products">대표 상품</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="brand-band" aria-label="카탈로그 요약">
+        <div>
+          <strong id="brand-count">0</strong>
+          <span>Brands</span>
+        </div>
+        <div>
+          <strong id="product-count">0</strong>
+          <span>Products</span>
+        </div>
+        <div>
+          <strong>Pages</strong>
+          <span>GitHub</span>
+        </div>
+      </section>
+
+      <section class="catalog-section" id="brands" aria-labelledby="brands-title">
+        <div class="section-heading">
+          <p class="eyebrow">BRANDS</p>
+          <h2 id="brands-title">브랜드 카탈로그</h2>
+        </div>
+        <div class="toolbar" aria-label="브랜드 탐색">
+          <label class="search-field">
+            <span class="visually-hidden">브랜드 검색</span>
+            <input
+              id="catalog-search"
+              type="search"
+              placeholder="브랜드, 상품, 카테고리 검색"
+              autocomplete="off"
+            />
+          </label>
+          <div class="filter-tabs" id="filter-tabs" aria-label="브랜드 상태 필터"></div>
+        </div>
+        <div class="status-line" id="status-line" role="status" aria-live="polite"></div>
+        <div class="brand-grid" id="brand-grid"></div>
+      </section>
+
+      <section class="catalog-section product-section" id="products" aria-labelledby="products-title">
+        <div class="section-heading">
+          <p class="eyebrow">PRODUCTS</p>
+          <h2 id="products-title">대표 상품</h2>
+        </div>
+        <div class="product-grid" id="product-grid"></div>
+      </section>
+
+      <section class="contact-band" id="contact" aria-labelledby="contact-title">
+        <div>
+          <p class="eyebrow">CONTACT</p>
+          <h2 id="contact-title">입점, 구매, 협업 문의</h2>
+          <p>브랜드명, 상품명, 수량, 납기 일정을 함께 보내주시면 빠르게 확인할 수 있습니다.</p>
+        </div>
+        <a class="button primary dark" href="mailto:galadous@naver.com">galadous@naver.com</a>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>XORD Brands</span>
+      <span>© <span id="year"></span> xord-brands</span>
+    </footer>
+
+    <script src="script.js?v=20260707"></script>
+  </body>
+</html>
