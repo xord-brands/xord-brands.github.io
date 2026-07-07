@@ -25,9 +25,26 @@ function renderDetail(product, brand) {
   if (!detail) return;
 
   const features = productFeatures(product, brand);
+  const thumbnails = product.thumbnails && product.thumbnails.length ? product.thumbnails : [product.image].filter(Boolean);
+  const detailImages = product.detailImages || [];
   detail.innerHTML = `
     <div class="detail-media" style="--accent:${escapeHtml(brand.accent)}">
-      <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" />
+      <img class="detail-main-image" src="${escapeHtml(thumbnails[0])}" alt="${escapeHtml(product.name)}" />
+      ${
+        thumbnails.length > 1
+          ? `<div class="detail-thumbs" aria-label="상품 썸네일">
+              ${thumbnails
+                .map(
+                  (image, index) => `
+                    <a href="${escapeHtml(image)}">
+                      <img src="${escapeHtml(image)}" alt="${escapeHtml(product.name)} 썸네일 ${index + 1}" />
+                    </a>
+                  `,
+                )
+                .join("")}
+            </div>`
+          : ""
+      }
     </div>
     <div class="detail-copy">
       <div class="card-pills">
@@ -69,6 +86,25 @@ function renderDetail(product, brand) {
         }
       </div>
     </div>
+    ${
+      detailImages.length
+        ? `<div class="detail-image-stack">
+            <div class="section-heading compact">
+              <p class="eyebrow">DETAIL IMAGES</p>
+              <h2>상품 상세 이미지</h2>
+            </div>
+            ${detailImages
+              .map(
+                (image, index) => `
+                  <figure>
+                    <img src="${escapeHtml(image)}" alt="${escapeHtml(product.name)} 상세 이미지 ${index + 1}" />
+                  </figure>
+                `,
+              )
+              .join("")}
+          </div>`
+        : ""
+    }
   `;
 }
 

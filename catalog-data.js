@@ -1,4 +1,4 @@
-const XORD_DATA_URL = "data/catalog.csv?v=20260707-4";
+const XORD_DATA_URL = "data/xord-brands-management.csv?v=20260707-5";
 
 function xordNormalize(value) {
   return String(value || "").toLowerCase().trim();
@@ -55,6 +55,13 @@ function xordParseCsv(text) {
   );
 }
 
+function xordImageList(value) {
+  return String(value || "")
+    .split("|")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function xordCsvToCatalog(text) {
   const brands = new Map();
   const rows = xordParseCsv(text);
@@ -70,7 +77,7 @@ function xordCsvToCatalog(text) {
       description: row.brand_description,
       category: row.brand_category,
       accent: row.brand_accent || "#2f7d77",
-      image: row.brand_image,
+      image: row.brand_representative_image || row.brand_image,
       storeUrl: row.store_url,
       products: [],
     };
@@ -82,18 +89,23 @@ function xordCsvToCatalog(text) {
     brand.description = row.brand_description || brand.description;
     brand.category = row.brand_category || brand.category;
     brand.accent = row.brand_accent || brand.accent;
-    brand.image = row.brand_image || brand.image;
+    brand.image = row.brand_representative_image || row.brand_image || brand.image;
     brand.storeUrl = row.store_url || brand.storeUrl;
 
     if (row.row_type === "product" && row.product_name) {
+      const thumbnails = xordImageList(row.product_thumbnail_images || row.product_image);
+      const detailImages = xordImageList(row.product_detail_images);
       brand.products.push({
         model: row.product_model,
         name: row.product_name,
         summary: row.product_summary,
-        image: row.product_image,
+        image: thumbnails[0] || row.product_image,
+        thumbnails,
+        detailImages,
         tags: row.product_tags
           ? row.product_tags.split("|").map((tag) => tag.trim()).filter(Boolean)
           : [],
+        notes: row.notes,
       });
     }
 
