@@ -5,6 +5,38 @@ if (detailYearTarget) {
   detailYearTarget.textContent = String(new Date().getFullYear());
 }
 
+function imageCandidateAttr(candidates) {
+  return escapeHtml((candidates || []).join("|"));
+}
+
+function imageMarkup(candidates, alt, className = "", removeOnFail = false) {
+  const list = (candidates || []).filter(Boolean);
+  if (!list.length) return "";
+  return `<img${className ? ` class="${escapeHtml(className)}"` : ""} src="${escapeHtml(list[0])}" alt="${escapeHtml(alt)}" data-image-candidates="${imageCandidateAttr(list)}"${removeOnFail ? ' data-remove-on-fail="true"' : ""} />`;
+}
+
+function activateCandidateImages(root = document) {
+  root.querySelectorAll("img[data-image-candidates]").forEach((image) => {
+    if (image.dataset.candidatesReady) return;
+    image.dataset.candidatesReady = "true";
+    const candidates = image.dataset.imageCandidates.split("|").filter(Boolean);
+    let index = Math.max(0, candidates.indexOf(image.getAttribute("src")));
+
+    image.addEventListener("error", () => {
+      index += 1;
+      if (index < candidates.length) {
+        image.src = candidates[index];
+        return;
+      }
+
+      if (image.dataset.removeOnFail === "true") {
+        const removable = image.closest("[data-remove-on-image-fail]");
+        if (removable) removable.remove();
+      }
+    });
+  });
+}
+
 function getRequestedModel() {
   const params = new URLSearchParams(window.location.search);
   return (params.get("model") || "").trim().toLowerCase();
@@ -13,7 +45,7 @@ function getRequestedModel() {
 function productFeatures(product, brand) {
   const tags = product.tags || [];
   return [
-    `${brand.nameKo || brand.name} 브랜드 카탈로그에 등록된 대표 상품입니다.`,
+    `${brand.nameKo || brand.name} 브랜드 카탈로그에 등록된 상품입니다.`,
     product.summary,
     tags.length ? `${tags.join(", ")} 키워드로 분류해 관리할 수 있습니다.` : "",
   ].filter(Boolean);
@@ -25,19 +57,20 @@ function renderDetail(product, brand) {
   if (!detail) return;
 
   const features = productFeatures(product, brand);
-  const thumbnails = product.thumbnails && product.thumbnails.length ? product.thumbnails : [product.image].filter(Boolean);
-  const detailImages = product.detailImages || [];
+  const thumbnailImageSets = product.thumbnailImageSets || [product.imageCandidates || [product.image].filter(Boolean)];
+  const detailImageSets = product.detailImageSets || [];
+  const storeLinks = product.storeLinks && product.storeLinks.length ? product.storeLinks : brand.storeLinks || [];
   detail.innerHTML = `
     <div class="detail-media" style="--accent:${escapeHtml(brand.accent)}">
-      <img class="detail-main-image" src="${escapeHtml(thumbnails[0])}" alt="${escapeHtml(product.name)}" />
+      ${imageMarkup(thumbnailImageSets[0], product.name, "detail-main-image")}
       ${
-        thumbnails.length > 1
+        thumbnailImageSets.length > 1
           ? `<div class="detail-thumbs" aria-label="상품 썸네일">
-              ${thumbnails
+              ${thumbnailImageSets
                 .map(
-                  (image, index) => `
-                    <a href="${escapeHtml(image)}">
-                      <img src="${escapeHtml(image)}" alt="${escapeHtml(product.name)} 썸네일 ${index + 1}" />
+                  (candidates, index) => `
+                    <a href="${escapeHtml(candidates[0])}" data-remove-on-image-fail>
+                      ${imageMarkup(candidates, `${product.name} 썸네일 ${index + 1}`, "", true)}
                     </a>
                   `,
                 )
@@ -64,7 +97,7 @@ function renderDetail(product, brand) {
         </div>
         <div>
           <dt>카테고리</dt>
-          <dd>${escapeHtml(brand.category)}</dd>
+          <dd>${escapeHtml(product.category || brand.category)}</dd>
         </div>
         <div>
           <dt>모델명</dt>
@@ -78,26 +111,31 @@ function renderDetail(product, brand) {
         </ul>
       </div>
       <div class="detail-actions">
-        <a class="button primary dark" href="index.html#products">목록으로</a>
+        <a class="button primary dark" href="index.html#products-${escapeHtml(brand.slug)}">목록으로</a>
         ${
-          brand.storeUrl
-            ? `<a class="button solid" href="${escapeHtml(brand.storeUrl)}" target="_blank" rel="noreferrer">스토어 보기</a>`
+          storeLinks.length
+            ? storeLinks
+                .map(
+                  (link) =>
+                    `<a class="button solid" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(link.label)} 보기</a>`,
+                )
+                .join("")
             : '<span class="button unavailable">스토어 준비중</span>'
         }
       </div>
     </div>
     ${
-      detailImages.length
+      detailImageSets.length
         ? `<div class="detail-image-stack">
             <div class="section-heading compact">
               <p class="eyebrow">DETAIL IMAGES</p>
               <h2>상품 상세 이미지</h2>
             </div>
-            ${detailImages
+            ${detailImageSets
               .map(
-                (image, index) => `
-                  <figure>
-                    <img src="${escapeHtml(image)}" alt="${escapeHtml(product.name)} 상세 이미지 ${index + 1}" />
+                (candidates, index) => `
+                  <figure data-remove-on-image-fail>
+                    ${imageMarkup(candidates, `${product.name} 상세 이미지 ${index + 1}`, "", true)}
                   </figure>
                 `,
               )
@@ -106,6 +144,7 @@ function renderDetail(product, brand) {
         : ""
     }
   `;
+  activateCandidateImages(detail);
 }
 
 function renderRelated(catalog, currentProduct, currentBrand) {
@@ -126,11 +165,12 @@ function renderRelated(catalog, currentProduct, currentBrand) {
       (product) => `
         <article class="product-card" style="--accent:${escapeHtml(currentBrand.accent)}">
           <a class="product-media" href="${productUrl(product)}" aria-label="${escapeHtml(product.name)} 상세 보기">
-            <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" />
+            ${imageMarkup(product.imageCandidates, product.name)}
           </a>
           <div class="product-body">
             <div class="card-pills">
               <span>${escapeHtml(currentBrand.name)}</span>
+              <span>${escapeHtml(product.category)}</span>
               <span>${escapeHtml(product.model)}</span>
             </div>
             <h3><a href="${productUrl(product)}">${escapeHtml(product.name)}</a></h3>
@@ -141,6 +181,7 @@ function renderRelated(catalog, currentProduct, currentBrand) {
       `,
     )
     .join("");
+  activateCandidateImages(related);
 }
 
 function renderNotFound(catalog) {
@@ -153,7 +194,7 @@ function renderNotFound(catalog) {
       상품을 찾지 못했습니다.
       ${
         firstProduct
-          ? `<a class="button solid" href="${productUrl(firstProduct.product)}">샘플 상품 보기</a>`
+          ? `<a class="button solid" href="${productUrl(firstProduct.product)}">첫 상품 보기</a>`
           : '<a class="button solid" href="index.html">첫 페이지로</a>'
       }
     </div>

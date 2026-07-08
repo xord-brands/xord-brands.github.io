@@ -1,4 +1,6 @@
-const XORD_DATA_URL = "data/xord-brands-management.csv?v=20260707-5";
+const XORD_DATA_URL = "data/xord-brands-management.csv?v=20260708-3";
+const XORD_IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "webp"];
+const XORD_MAX_IMAGE_INDEX = 12;
 
 function xordNormalize(value) {
   return String(value || "").toLowerCase().trim();
@@ -62,23 +64,76 @@ function xordImageList(value) {
     .filter(Boolean);
 }
 
+function xordPathSegment(value) {
+  return encodeURIComponent(String(value || "").trim());
+}
+
+function xordImageCandidates(basePath, fileName) {
+  return XORD_IMAGE_EXTENSIONS.map((extension) => `${basePath}/${fileName}.${extension}`);
+}
+
+function xordNumberedImageSets(basePath, maxIndex = XORD_MAX_IMAGE_INDEX) {
+  return Array.from({ length: maxIndex }, (_, index) => {
+    const fileName = String(index + 1).padStart(2, "0");
+    return xordImageCandidates(basePath, fileName);
+  });
+}
+
+function xordBrandImageCandidates(brandId) {
+  return xordImageCandidates(`assets/images/brands/${xordPathSegment(brandId)}`, "brand-main");
+}
+
+function xordProductImageSets(brandId, productModel, imageType) {
+  return xordNumberedImageSets(
+    `assets/images/products/${xordPathSegment(brandId)}/${xordPathSegment(productModel)}/${imageType}`,
+  );
+}
+
+function xordParseStoreLinks(value) {
+  return xordImageList(value).map((item, index) => {
+    const isBareUrl = /^https?:\/\//i.test(item);
+    const equalIndex = item.indexOf("=");
+    const colonIndex = item.indexOf(":");
+    const separatorIndex = equalIndex !== -1 ? equalIndex : colonIndex;
+
+    if (isBareUrl || separatorIndex === -1) {
+      return {
+        label: index === 0 ? "스토어" : `스토어 ${index + 1}`,
+        url: item.trim(),
+      };
+    }
+
+    return {
+      label: item.slice(0, separatorIndex).trim() || `스토어 ${index + 1}`,
+      url: item.slice(separatorIndex + 1).trim(),
+    };
+  }).filter((link) => link.url);
+}
+
 function xordCsvToCatalog(text) {
   const brands = new Map();
   const rows = xordParseCsv(text);
 
   rows.forEach((row) => {
-    if (!row.brand_slug) return;
-    const brand = brands.get(row.brand_slug) || {
+    const brandId = row.brand_id;
+    if (!brandId) return;
+
+    const catalogCategory = row.catalog_category;
+    const brandImageCandidates = xordBrandImageCandidates(brandId);
+    const storeLinks = xordParseStoreLinks(row.store_links);
+    const brand = brands.get(brandId) || {
       name: row.brand_name,
       nameKo: row.brand_name_ko,
-      slug: row.brand_slug,
+      id: brandId,
+      slug: brandId,
       status: row.status,
       summary: row.brand_summary,
       description: row.brand_description,
-      category: row.brand_category,
+      category: catalogCategory,
       accent: row.brand_accent || "#2f7d77",
-      image: row.brand_representative_image || row.brand_image,
-      storeUrl: row.store_url,
+      image: brandImageCandidates[0],
+      imageCandidates: brandImageCandidates,
+      storeLinks,
       products: [],
     };
 
@@ -87,29 +142,32 @@ function xordCsvToCatalog(text) {
     brand.status = row.status || brand.status;
     brand.summary = row.brand_summary || brand.summary;
     brand.description = row.brand_description || brand.description;
-    brand.category = row.brand_category || brand.category;
+    brand.category = catalogCategory || brand.category;
     brand.accent = row.brand_accent || brand.accent;
-    brand.image = row.brand_representative_image || row.brand_image || brand.image;
-    brand.storeUrl = row.store_url || brand.storeUrl;
+    brand.image = brandImageCandidates[0];
+    brand.imageCandidates = brandImageCandidates;
+    brand.storeLinks = storeLinks.length ? storeLinks : brand.storeLinks;
 
     if (row.row_type === "product" && row.product_name) {
-      const thumbnails = xordImageList(row.product_thumbnail_images || row.product_image);
-      const detailImages = xordImageList(row.product_detail_images);
+      const thumbnailImageSets = xordProductImageSets(brandId, row.product_model, "thumbnails");
+      const detailImageSets = xordProductImageSets(brandId, row.product_model, "details");
       brand.products.push({
         model: row.product_model,
         name: row.product_name,
+        category: row.product_category || catalogCategory,
         summary: row.product_summary,
-        image: thumbnails[0] || row.product_image,
-        thumbnails,
-        detailImages,
+        image: thumbnailImageSets[0][0],
+        imageCandidates: thumbnailImageSets[0],
+        thumbnailImageSets,
+        detailImageSets,
+        storeLinks,
         tags: row.product_tags
           ? row.product_tags.split("|").map((tag) => tag.trim()).filter(Boolean)
           : [],
-        notes: row.notes,
       });
     }
 
-    brands.set(row.brand_slug, brand);
+    brands.set(brandId, brand);
   });
 
   return { brands: [...brands.values()] };

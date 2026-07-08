@@ -14,10 +14,42 @@ if (header) {
   window.addEventListener("scroll", syncHeader, { passive: true });
 }
 
+function imageCandidateAttr(candidates) {
+  return escapeHtml((candidates || []).join("|"));
+}
+
+function imageMarkup(candidates, alt, className = "", removeOnFail = false) {
+  const list = (candidates || []).filter(Boolean);
+  if (!list.length) return "";
+  return `<img${className ? ` class="${escapeHtml(className)}"` : ""} src="${escapeHtml(list[0])}" alt="${escapeHtml(alt)}" data-image-candidates="${imageCandidateAttr(list)}"${removeOnFail ? ' data-remove-on-fail="true"' : ""} />`;
+}
+
+function activateCandidateImages(root = document) {
+  root.querySelectorAll("img[data-image-candidates]").forEach((image) => {
+    if (image.dataset.candidatesReady) return;
+    image.dataset.candidatesReady = "true";
+    const candidates = image.dataset.imageCandidates.split("|").filter(Boolean);
+    let index = Math.max(0, candidates.indexOf(image.getAttribute("src")));
+
+    image.addEventListener("error", () => {
+      index += 1;
+      if (index < candidates.length) {
+        image.src = candidates[index];
+        return;
+      }
+
+      if (image.dataset.removeOnFail === "true") {
+        const removable = image.closest("[data-remove-on-image-fail]");
+        if (removable) removable.remove();
+      }
+    });
+  });
+}
+
 function brandMatches(brand, query) {
   if (!query) return true;
   const productText = brand.products
-    .map((product) => [product.name, product.model, product.summary, ...(product.tags || [])].join(" "))
+    .map((product) => [product.name, product.model, product.category, product.summary, ...(product.tags || [])].join(" "))
     .join(" ");
   return [brand.name, brand.nameKo, brand.status, brand.summary, brand.description, brand.category, productText]
     .join(" ")
@@ -26,22 +58,27 @@ function brandMatches(brand, query) {
 }
 
 function brandImage(brand) {
-  if (brand.image) {
-    return `<img src="${escapeHtml(brand.image)}" alt="${escapeHtml(brand.nameKo || brand.name)} 대표 이미지" />`;
+  if (brand.imageCandidates && brand.imageCandidates.length) {
+    return imageMarkup(brand.imageCandidates, `${brand.nameKo || brand.name} 대표 이미지`);
   }
   return `<div class="brand-fallback" aria-hidden="true">${escapeHtml(brand.name.slice(0, 2))}</div>`;
 }
 
 function storeAction(brand) {
-  if (!brand.storeUrl) {
+  if (!brand.storeLinks || !brand.storeLinks.length) {
     return '<span class="button unavailable">준비중</span>';
   }
-  return `<a class="button solid" href="${escapeHtml(brand.storeUrl)}" target="_blank" rel="noreferrer">스토어 보기</a>`;
+  return brand.storeLinks
+    .map(
+      (link) =>
+        `<a class="button solid" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(link.label)} 보기</a>`,
+    )
+    .join("");
 }
 
 function productPreview(brand) {
   if (!brand.products.length) {
-    return '<p class="muted">대표 상품 등록 준비중</p>';
+    return '<p class="muted">상품 등록 준비중</p>';
   }
   return `
     <div class="preview-row">
@@ -50,7 +87,7 @@ function productPreview(brand) {
         .map(
           (product) => `
             <a href="${productUrl(product)}" aria-label="${escapeHtml(product.name)} 상세 보기">
-              <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" />
+              ${imageMarkup(product.imageCandidates, product.name)}
             </a>
           `,
         )
@@ -60,6 +97,7 @@ function productPreview(brand) {
 }
 
 function renderBrandCard(brand) {
+  const productSectionId = `products-${brand.slug}`;
   return `
     <article class="brand-card" style="--accent:${escapeHtml(brand.accent)}">
       <div class="brand-card-media">${brandImage(brand)}</div>
@@ -72,7 +110,7 @@ function renderBrandCard(brand) {
         <p>${escapeHtml(brand.summary)}</p>
         ${productPreview(brand)}
         <div class="card-actions">
-          <a class="button ghost" href="#products" data-brand-link="${escapeHtml(brand.slug)}">대표 상품</a>
+          <a class="button ghost" href="#${escapeHtml(productSectionId)}" data-brand-link="${escapeHtml(brand.slug)}">전체 상품</a>
           ${storeAction(brand)}
         </div>
       </div>
@@ -84,11 +122,12 @@ function renderProductCard(product, brand) {
   return `
     <article class="product-card" style="--accent:${escapeHtml(brand.accent)}">
       <a class="product-media" href="${productUrl(product)}" aria-label="${escapeHtml(product.name)} 상세 보기">
-        <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" />
+        ${imageMarkup(product.imageCandidates, product.name)}
       </a>
       <div class="product-body">
         <div class="card-pills">
           <span>${escapeHtml(brand.name)}</span>
+          <span>${escapeHtml(product.category)}</span>
           <span>${escapeHtml(product.model)}</span>
         </div>
         <h3><a href="${productUrl(product)}">${escapeHtml(product.name)}</a></h3>
@@ -100,6 +139,48 @@ function renderProductCard(product, brand) {
       </div>
     </article>
   `;
+}
+
+function renderProductBrandSection(brand) {
+  const productCount = brand.products.length;
+  const productLabel = productCount ? `${productCount}개 상품` : "상품 준비중";
+
+  return `
+    <section class="product-brand-section" id="products-${escapeHtml(brand.slug)}" style="--accent:${escapeHtml(brand.accent)}">
+      <div class="product-brand-header">
+        <div>
+          <div class="card-pills">
+            <span>${escapeHtml(brand.status)}</span>
+            <span>${escapeHtml(brand.category)}</span>
+            <span>${escapeHtml(productLabel)}</span>
+          </div>
+          <h3>${escapeHtml(brand.name)}<small>${escapeHtml(brand.nameKo)}</small></h3>
+          <p>${escapeHtml(brand.description || brand.summary)}</p>
+        </div>
+        <div class="product-brand-actions">
+          ${storeAction(brand)}
+        </div>
+      </div>
+      ${
+        productCount
+          ? `<div class="product-grid">${brand.products.map((product) => renderProductCard(product, brand)).join("")}</div>`
+          : '<div class="empty-state">등록된 상품이 없습니다.</div>'
+      }
+    </section>
+  `;
+}
+
+function scrollToCurrentHashTarget() {
+  const targetId = decodeURIComponent(window.location.hash.slice(1));
+  if (!targetId) return;
+  const target = document.getElementById(targetId);
+  if (target) target.scrollIntoView({ block: "start" });
+}
+
+function scheduleHashScroll() {
+  [0, 120, 480].forEach((delay) => {
+    window.setTimeout(scrollToCurrentHashTarget, delay);
+  });
 }
 
 function render(data) {
@@ -135,6 +216,7 @@ function render(data) {
     });
 
     grid.innerHTML = filtered.map(renderBrandCard).join("");
+    activateCandidateImages(grid);
     statusLine.textContent = `${filtered.length}개 브랜드`;
 
     if (!filtered.length) {
@@ -153,10 +235,10 @@ function render(data) {
   });
 
   search.addEventListener("input", draw);
-  productGrid.innerHTML = products
-    .map(({ product, brand }) => renderProductCard(product, brand))
-    .join("");
+  productGrid.innerHTML = brands.map(renderProductBrandSection).join("");
+  activateCandidateImages(productGrid);
   draw();
+  scheduleHashScroll();
 }
 
 fetch(dataUrl)
