@@ -76,6 +76,13 @@ function storeAction(brand) {
     .join("");
 }
 
+function brandTitleMarkup(brand) {
+  const primaryName = brand.nameKo || brand.name;
+  const secondaryName = brand.nameKo && brand.nameKo !== brand.name ? brand.name : "";
+
+  return `<h3>${escapeHtml(primaryName)}${secondaryName ? `<small>${escapeHtml(secondaryName)}</small>` : ""}</h3>`;
+}
+
 function productPreview(brand) {
   if (!brand.products.length) {
     return '<p class="muted">상품 등록 준비중</p>';
@@ -106,7 +113,7 @@ function renderBrandCard(brand) {
           <span>${escapeHtml(brand.status)}</span>
           <span>${escapeHtml(brand.category)}</span>
         </div>
-        <h3>${escapeHtml(brand.name)}<small>${escapeHtml(brand.nameKo)}</small></h3>
+        ${brandTitleMarkup(brand)}
         <p>${escapeHtml(brand.summary)}</p>
         ${productPreview(brand)}
         <div class="card-actions">
@@ -154,7 +161,7 @@ function renderProductBrandSection(brand) {
             <span>${escapeHtml(brand.category)}</span>
             <span>${escapeHtml(productLabel)}</span>
           </div>
-          <h3>${escapeHtml(brand.name)}<small>${escapeHtml(brand.nameKo)}</small></h3>
+          ${brandTitleMarkup(brand)}
           <p>${escapeHtml(brand.description || brand.summary)}</p>
         </div>
         <div class="product-brand-actions">
