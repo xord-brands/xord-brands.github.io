@@ -1,4 +1,4 @@
-const XORD_ASSET_VERSION = "20260808-detail-order";
+const XORD_ASSET_VERSION = "20260808-candidate-order";
 const XORD_DATA_URL = `data/xord-brands-management.csv?v=${XORD_ASSET_VERSION}`;
 const XORD_IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "webp"];
 const XORD_MAX_DETAIL_IMAGE_INDEX = 10;
