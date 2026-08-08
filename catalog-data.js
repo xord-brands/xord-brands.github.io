@@ -1,6 +1,8 @@
-const XORD_DATA_URL = "data/xord-brands-management.csv?v=20260708-3";
+const XORD_ASSET_VERSION = "20260808-detail-order";
+const XORD_DATA_URL = `data/xord-brands-management.csv?v=${XORD_ASSET_VERSION}`;
 const XORD_IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "webp"];
-const XORD_MAX_IMAGE_INDEX = 12;
+const XORD_MAX_DETAIL_IMAGE_INDEX = 10;
+const XORD_MAX_THUMBNAIL_IMAGE_INDEX = 4;
 
 function xordNormalize(value) {
   return String(value || "").toLowerCase().trim();
@@ -64,15 +66,26 @@ function xordImageList(value) {
     .filter(Boolean);
 }
 
+function xordVersionedSrc(src) {
+  if (!src || /^(data:|blob:|https?:\/\/)/i.test(src)) return src;
+  const separator = src.includes("?") ? "&" : "?";
+  return `${src}${separator}v=${XORD_ASSET_VERSION}`;
+}
+
 function xordPathSegment(value) {
   return encodeURIComponent(String(value || "").trim());
 }
 
 function xordImageCandidates(basePath, fileName) {
-  return XORD_IMAGE_EXTENSIONS.map((extension) => `${basePath}/${fileName}.${extension}`);
+  return XORD_IMAGE_EXTENSIONS.map((extension) => xordVersionedSrc(`${basePath}/${fileName}.${extension}`));
 }
 
-function xordNumberedImageSets(basePath, maxIndex = XORD_MAX_IMAGE_INDEX) {
+function xordExplicitImageSets(value) {
+  const paths = xordImageList(value);
+  return paths.length ? paths.map((src) => [xordVersionedSrc(src)]) : null;
+}
+
+function xordNumberedImageSets(basePath, maxIndex) {
   return Array.from({ length: maxIndex }, (_, index) => {
     const fileName = String(index + 1).padStart(2, "0");
     return xordImageCandidates(basePath, fileName);
@@ -86,6 +99,7 @@ function xordBrandImageCandidates(brandId) {
 function xordProductImageSets(brandId, productModel, imageType) {
   return xordNumberedImageSets(
     `assets/images/products/${xordPathSegment(brandId)}/${xordPathSegment(productModel)}/${imageType}`,
+    imageType === "thumbnails" ? XORD_MAX_THUMBNAIL_IMAGE_INDEX : XORD_MAX_DETAIL_IMAGE_INDEX,
   );
 }
 
@@ -149,15 +163,17 @@ function xordCsvToCatalog(text) {
     brand.storeLinks = storeLinks.length ? storeLinks : brand.storeLinks;
 
     if (row.row_type === "product" && row.product_name) {
-      const thumbnailImageSets = xordProductImageSets(brandId, row.product_model, "thumbnails");
-      const detailImageSets = xordProductImageSets(brandId, row.product_model, "details");
+      const thumbnailImageSets =
+        xordExplicitImageSets(row.thumbnail_images) || xordProductImageSets(brandId, row.product_model, "thumbnails");
+      const detailImageSets =
+        xordExplicitImageSets(row.detail_images) || xordProductImageSets(brandId, row.product_model, "details");
       brand.products.push({
         model: row.product_model,
         name: row.product_name,
         category: row.product_category || catalogCategory,
         summary: row.product_summary,
-        image: thumbnailImageSets[0][0],
-        imageCandidates: thumbnailImageSets[0],
+        image: thumbnailImageSets[0]?.[0] || "",
+        imageCandidates: thumbnailImageSets[0] || [],
         thumbnailImageSets,
         detailImageSets,
         storeLinks,
