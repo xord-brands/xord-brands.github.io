@@ -1,4 +1,4 @@
-const XORD_ASSET_VERSION = "20260808-candidate-order";
+const XORD_ASSET_VERSION = "20260817-seo-static-pages";
 const XORD_DATA_URL = `data/xord-brands-management.csv?v=${XORD_ASSET_VERSION}`;
 const XORD_IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "webp"];
 const XORD_MAX_DETAIL_IMAGE_INDEX = 10;
@@ -74,6 +74,13 @@ function xordVersionedSrc(src) {
 
 function xordPathSegment(value) {
   return encodeURIComponent(String(value || "").trim());
+}
+
+function xordProductSlug(product) {
+  return String(product.model || product.name || "product")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "product";
 }
 
 function xordImageCandidates(basePath, fileName) {
@@ -196,7 +203,7 @@ function xordAllProducts(catalog) {
 }
 
 function xordProductUrl(product) {
-  return `product.html?model=${encodeURIComponent(product.model || product.name)}`;
+  return `products/${xordProductSlug(product)}/`;
 }
 
 window.XordCatalog = {

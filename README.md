@@ -41,3 +41,17 @@ assets/images/products/{brand_id}/{product_model}/details/01.jpg
 ```
 
 Do not enter `brand_representative_image`, `product_thumbnail_images`, or `product_detail_images` columns in the CSV. The site automatically tries `png`, `jpg`, `jpeg`, and `webp` files named `brand-main` or `01` through `12`.
+
+## SEO Static Pages
+
+상품 CSV 변경 후 검색 색인용 정적 페이지와 sitemap을 다시 생성합니다.
+
+```sh
+python3 scripts/generate_static_pages.py
+```
+
+생성 대상:
+
+- `products/{model-slug}/index.html`: 상품별 정적 상세 페이지
+- `sitemap.xml`: 홈과 상품 상세 URL 목록
+- `robots.txt`: 크롤링 허용 및 sitemap 위치
